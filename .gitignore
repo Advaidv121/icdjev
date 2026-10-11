@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+# WHO classification files are NOT redistributable by this repo.
+*.xml
+!tests/data/*.xml
+*.zip
+.env

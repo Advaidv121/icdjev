@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic fixture written for tests. NOT WHO content; codes/labels are invented in WHO's structure. -->
+<ClaML version="2.0.0">
+  <Identifier authority="WHO" uid="icd10_test"/>
+  <Title name="TEST" version="test" date="2000-01-01">Synthetic test classification</Title>
+  <Modifier code="MDIAB_4"><SubClass code=".0"/><SubClass code=".9"/></Modifier>
+  <ModifierClass modifier="MDIAB_4" code=".0" usage="dagger"><SuperClass code="MDIAB_4"/>
+    <Rubric kind="preferred"><Label xml:lang="en">with complications</Label></Rubric>
+    <Rubric kind="inclusion"><Label xml:lang="en">Diabetic: nerve damage<Reference code="G99">G99.0</Reference></Label></Rubric></ModifierClass>
+  <ModifierClass modifier="MDIAB_4" code=".9"><SuperClass code="MDIAB_4"/>
+    <Rubric kind="preferred"><Label xml:lang="en">without complications</Label></Rubric></ModifierClass>
+  <Modifier code="MEXT_5"><SubClass code="0"/><SubClass code="1"/></Modifier>
+  <ModifierClass modifier="MEXT_5" code="0"><SuperClass code="MEXT_5"/><Rubric kind="preferred"><Label xml:lang="en">closed</Label></Rubric></ModifierClass>
+  <ModifierClass modifier="MEXT_5" code="1"><SuperClass code="MEXT_5"/><Rubric kind="preferred"><Label xml:lang="en">open</Label></Rubric></ModifierClass>
+  <Class code="T1" kind="chapter"><SubClass code="T10-T19"/>
+    <Rubric kind="preferred"><Label xml:lang="en">Test chapter one</Label></Rubric>
+    <Rubric kind="exclusion"><Label xml:lang="en">pregnancy conditions<Reference>O00-O99</Reference></Label></Rubric></Class>
+  <Class code="T10-T19" kind="block"><SuperClass code="T1"/><SubClass code="T11"/><SubClass code="T12"/><SubClass code="T13"/>
+    <Rubric kind="preferred"><Label xml:lang="en">Test block</Label></Rubric></Class>
+  <Class code="T11" kind="category"><SuperClass code="T10-T19"/><ModifiedBy code="MDIAB_4"/>
+    <Rubric kind="preferred"><Label xml:lang="en">Test diabetes</Label></Rubric>
+    <Rubric kind="inclusion"><Label xml:lang="en">sugar disease</Label></Rubric>
+    <Rubric kind="exclusion"><Label xml:lang="en">neonatal sugar disease<Reference>P70.2</Reference></Label></Rubric>
+    <Rubric kind="exclusion"><Label xml:lang="en">gestational: malnutrition-related<Reference code="T12">T12.-</Reference></Label></Rubric>
+    <Rubric kind="exclusion"><Label xml:lang="en">see other chapters for localized conditions</Label></Rubric></Class>
+  <Class code="T12" kind="category"><SuperClass code="T10-T19"/><ModifiedBy code="MEXT_5" all="true"/><SubClass code="T12.0"/><SubClass code="T12.1"/>
+    <Rubric kind="preferred"><Label xml:lang="en">Test fracture</Label></Rubric></Class>
+  <Class code="T12.0" kind="category"><SuperClass code="T12"/><Rubric kind="preferred"><Label xml:lang="en">Upper end</Label></Rubric></Class>
+  <Class code="T12.1" kind="category"><SuperClass code="T12"/><Rubric kind="preferred"><Label xml:lang="en">Lower end</Label></Rubric></Class>
+  <Class code="T13" kind="category"><SuperClass code="T10-T19"/>
+    <Rubric kind="preferred"><Label xml:lang="en">Essential test hypertension</Label></Rubric>
+    <Rubric kind="inclusion"><Label xml:lang="en">High blood pressure</Label></Rubric></Class>
+  <Class code="G99" kind="category" usage="aster"><SuperClass code="T10-T19"/>
+    <Rubric kind="preferred"><Label xml:lang="en">Test neuropathy<Reference code="T11" usage="dagger">T11.- with common fourth character .0</Reference></Label></Rubric></Class>
+</ClaML>

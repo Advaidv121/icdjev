@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "icdjev"
+version = "0.1.0"
+description = "Modifier-aware WHO ICD-10 catalogue (ClaML) with a Jev-ready coding engine. Bring your own WHO file."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+keywords = ["icd-10", "claml", "clinical-coding", "typesafe", "jev"]
+
+[project.optional-dependencies]
+jev = ["typesafe-sdk>=1.0"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+icdjev = "icdjev.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/icdjev"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
