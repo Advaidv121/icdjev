@@ -1,5 +1,7 @@
 # ICDJev
 
+![ICDJev project artwork](docs/assets/icdjev-hero.png)
+
 [![Tests](https://github.com/Advaidv121/icdjev/actions/workflows/tests.yml/badge.svg)](https://github.com/Advaidv121/icdjev/actions/workflows/tests.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
