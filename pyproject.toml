@@ -5,14 +5,33 @@ build-backend = "hatchling.build"
 [project]
 name = "icdjev"
 version = "0.1.0"
-description = "Modifier-aware WHO ICD-10 catalogue (ClaML) with a Jev-ready coding engine. Bring your own WHO file."
+description = "WHO ICD-10 lookup and reviewable Jev-powered coding suggestions."
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Advaid V"}]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
 dependencies = []
 keywords = ["icd-10", "claml", "clinical-coding", "typesafe", "jev"]
 
+[project.urls]
+Homepage = "https://github.com/Advaidv121/icdjev"
+Repository = "https://github.com/Advaidv121/icdjev"
+Documentation = "https://github.com/Advaidv121/icdjev/blob/main/docs/api.md"
+Issues = "https://github.com/Advaidv121/icdjev/issues"
+
 [project.optional-dependencies]
-jev = ["typesafe-sdk>=1.0"]
+jev = ["typesafe-sdk>=0.7.4,<0.8"]
 dev = ["pytest>=8", "ruff>=0.6"]
 
 [project.scripts]
@@ -28,3 +47,9 @@ addopts = "-q"
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/tests", "/examples/*.py", "/docs", "/README.md", "/pyproject.toml", "/LICENSE", "/CHANGELOG.md", "/CONTRIBUTING.md", "/SECURITY.md"]
