@@ -2,6 +2,10 @@
 
 **Reviewable ICD-10 suggestions from text and documents, powered by decision models.**
 
+![ICDLens project concept artwork](docs/assets/icdlens-hero.png)
+
+*Concept preview — see available features and planned integrations below.*
+
 Formerly ICDJev. The repository is now `icdlens`; the package, Python imports and CLI remain `icdjev` for compatibility. Text-based lookup is available today; document inputs and Clef integration are planned.
 
 [![Tests](https://github.com/Advaidv121/icdlens/actions/workflows/tests.yml/badge.svg)](https://github.com/Advaidv121/icdlens/actions/workflows/tests.yml)
