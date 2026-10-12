@@ -7,13 +7,30 @@
 """
 
 from .catalogue import Catalogue
+from .clef import ClefClient, ClefError
+from .documents import DocumentError, PreparedImage, pdf_to_base64_png, prepare_documents
 from .errors import IcdJevError, UnknownCodeError, UnsupportedFormatError
-from .lookup import ICDCandidate, ICDCode, ICDLookup, ICDReviewResult
+from .lookup import (
+    DocumentBatchResult,
+    DocumentLookupResult,
+    ICDCandidate,
+    ICDCode,
+    ICDLookup,
+    ICDReviewResult,
+)
 from .models import CodeRef, Edition, Node, Rubric
 
 __version__ = "0.1.0"
 __all__ = [
     "Catalogue",
+    "ClefClient",
+    "ClefError",
+    "DocumentError",
+    "DocumentBatchResult",
+    "DocumentLookupResult",
+    "PreparedImage",
+    "pdf_to_base64_png",
+    "prepare_documents",
     "CodeRef",
     "Edition",
     "ICDCandidate",

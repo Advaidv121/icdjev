@@ -62,10 +62,33 @@ Returned candidate statuses:
 
 Reasons describe deterministic selection/filtering decisions, not generated clinical explanations.
 
+## Clef and document inputs
+
+`ICDLookup(..., backend='jev', model=None, cloudflare_account_id=None, cloudflare_api_token=None)` selects Jev by default. `model=None` pins `jev-1.13.0` for Jev, or the selected Clef backend name. Clef backends are `clef` and `clef-flash`. Credentials default to `CLOUDFLARE_ACCOUNT_ID` / `CLOUDFLARE_AUTH_TOKEN`; `.env` loading is the caller's responsibility. Clef REST transport uses the standard library and needs no TypeSafe dependency.
+
+`get_icd(text, images=None, ...)` accepts up to four embedded images with a Clef backend. Images accompany both traversal and verification without being retained between calls. Jev rejects image evidence. Use `PreparedImage.to_data_url()` for local files.
+
+`prepare_documents(paths, *, target_longest_edge=2048, compress=True, pages=None, max_pages=100, office_converter=None)` performs local-only preparation with the optional `documents` dependencies. Accept a single path or multiple paths. Inputs include PDFs and supported raster images; DOC/DOCX needs LibreOffice or `office_converter(path) -> PDF path`. Page selections are one-based. Each `PreparedImage` retains source and page metadata and exposes its embedded data URL; do not serialize its base64 into review logs.
+
+`pdf_to_base64_png(path, *, pages=None, target_longest_edge=2048, compress=True, max_pages=100)` returns a list of base64 PNG strings, one per selected page. Add the `data:image/png;base64,` prefix when constructing a raw API image input.
+
+PNG output is lossless. `compress=True` enables encoding optimization; False skips that optimization but does not disable PNG's inherent compression. Resizing is separately controlled by `target_longest_edge`, preserving aspect ratio. Image preparation does not silently reduce requested quality to satisfy service limits: oversized output raises a document error. Inspect images for small-print legibility before hosted use.
+
+`get_icd_from_documents(paths, *, text=..., target_longest_edge=2048, compress=True, pages=None, max_pages=100, office_converter=None, threshold=None, include_candidates=3, best_score=False, document_model='clef')` returns `DocumentLookupResult`. It automatically uses a separate Clef client when the instance is configured for Jev, without changing text behavior. On a Clef instance it reuses that instance's backend; `document_model` selects the temporary client only.
+
+- `batches`: `DocumentBatchResult` objects containing source metadata, an `ICDReviewResult`, and per-request model/token usage.
+- `request_count`: actual successful hosted judgments across traversal and verification.
+- `usage`: input/output token totals; None if any request did not report a count.
+- `warnings`: explicit independent-batch warning when the bundle spans groups.
+- `needs_review`: always True.
+- `to_dict()`: JSON-ready report without embedded images.
+
+Groups respect four images / eight MiB combined decoded file bytes. Each image must fit four MiB and sixteen megapixels; the Clef client also enforces the thirteen-MiB JSON request limit. No probability averaging, code deduplication across groups, or whole-record contradiction reconciliation is implied. Repeated images across candidate batches add token usage. Documents are evidence, not trusted instructions.
+
 ## Errors and privacy
 
-Empty/non-string notes and invalid options raise `ValueError` before hosted judgment. Missing/invalid files raise catalogue/file errors. Missing SDK, credentials, service failures or malformed hosted results raise `icdjev.jev.JevError`; failures are not converted into empty reports.
+Empty/non-string notes and invalid options raise `ValueError` before hosted judgment. Missing/invalid files raise catalogue/file errors. Missing SDK, credentials, service failures or malformed hosted results raise `icdjev.jev.JevError` for Jev or `ClefError` for Cloudflare; local document preparation raises `DocumentError`. Failures are not converted into empty reports.
 
-Hosted inference sends the note and catalogue context to TypeSafe. Use synthetic text for development. Obtain organizational approval and appropriate vendor agreements before patient submissions. The library does not automatically store keys, notes, or results. Treat saved reports as sensitive.
+Hosted inference sends the note, attached images (if any), and catalogue context to the selected provider: TypeSafe or Cloudflare. Use synthetic text for development. Obtain organizational approval and appropriate vendor agreements before patient submissions. The library does not automatically store keys, notes, or results. Treat saved reports as sensitive.
 
 `Catalogue.load(path)` provides local-only lookup/search/validation. `ICDLookup.to_dicts(matches)` converts a matches list to dictionaries; use `review.to_dict()` for reports.

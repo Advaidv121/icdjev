@@ -4,9 +4,9 @@
 
 ![ICDLens project concept artwork](docs/assets/icdlens-hero.png)
 
-*Concept preview — see available features and planned integrations below.*
+*Project concept artwork — the SDK is a Python library, not a graphical application.*
 
-Formerly ICDJev. The repository is now `icdlens`; the package, Python imports and CLI remain `icdjev` for compatibility. Text-based lookup is available today; document inputs and Clef integration are planned.
+Formerly ICDJev. The repository is now `icdlens`; the package, Python imports and CLI remain `icdjev` for compatibility. Text and document lookup support Jev and Clef backends as described below.
 
 [![Tests](https://github.com/Advaidv121/icdlens/actions/workflows/tests.yml/badge.svg)](https://github.com/Advaidv121/icdlens/actions/workflows/tests.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
@@ -17,7 +17,7 @@ ICDLens is a Python SDK for WHO ICD-10 catalogue lookup and reviewable AI-assist
 ## Available today
 
 - Local catalogue: inspect codes, labels, hierarchy, inclusions, exclusions and modifier-derived codes without network access.
-- Optional AI lookup: traverse the catalogue and verify exact-code support using TypeSafe/Jev.
+- Optional AI lookup: traverse the catalogue and verify exact-code support using TypeSafe/Jev or Cloudflare Clef.
 - Review reports: inspect evaluated candidates, scores, cutoff decisions and depth truncation; export JSON-ready dictionaries.
 
 ## Decision models
@@ -25,19 +25,19 @@ ICDLens is a Python SDK for WHO ICD-10 catalogue lookup and reviewable AI-assist
 | Backend | Intended use | SDK status |
 | --- | --- | --- |
 | [TypeSafe Jev](https://typesafe.ai/) | Text-based candidate evaluation and exact-code verification | Available |
-| [Cloudflare Clef](https://developers.cloudflare.com/ai/models/@cf/cloudflare/clef/) | Text and image-based decisions | Planned |
-| [Cloudflare Clef-flash](https://developers.cloudflare.com/ai/models/@cf/cloudflare/clef-flash/) | Lower-latency text and image-based decisions | Planned |
+| [Cloudflare Clef](https://developers.cloudflare.com/ai/models/@cf/cloudflare/clef/) | Text and image-based decisions | Available |
+| [Cloudflare Clef-flash](https://developers.cloudflare.com/ai/models/@cf/cloudflare/clef-flash/) | Lower-latency text and image-based decisions | Available |
 
-These models evaluate predefined questions rather than generate free-form answers. Their scores indicate model support, not validated clinical confidence. Jev is the currently supported SDK backend; Clef and Clef-flash integration are planned.
+These models evaluate predefined questions rather than generate free-form answers. Their scores indicate model support, not validated clinical confidence. Jev is the default text backend. Choose `backend="clef"` or `backend="clef-flash"` for Cloudflare Workers AI. Document lookup automatically uses Clef when called on a Jev instance.
 
-## Planned document support
+## Document support
 
 - Accept multiple images and PDFs, with optional DOC/DOCX-to-PDF conversion.
-- Provide independently usable document preparation helpers: PDF pages to base64 PNG, configurable longest-edge rendering (proposed default: 2,048 pixels), and aspect-ratio preservation.
-- Enable lossless PNG optimization by default, with an opt-out; keep resizing separate from encoding compression and make lossy formats explicit.
-- Prepare document inputs for Clef with file/page provenance and explicit request-limit handling. Related multi-page records need an evidence-combination policy; batching alone does not provide joint review of the whole record.
+- Provide independently usable document preparation helpers: PDF pages to base64 PNG, configurable longest-edge rendering (default: 2,048 pixels), and aspect-ratio preservation.
+- Enable lossless PNG optimization by default, with an opt-out; keep resizing separate from encoding compression. Output is lossless PNG; disabling optimization does not disable PNG compression.
+- Prepare document inputs for Clef with file/page provenance and explicit request-limit handling. Each image group returns an independent review; results are not merged into a whole-record decision.
 
-Document helpers and document-based ICD lookup are roadmap items, not currently callable APIs. The SDK remains focused on ICD coding assistance, not general-purpose document extraction.
+Install the `documents` extra for PDF/image preparation. DOC/DOCX conversion requires LibreOffice or a caller-provided converter. The SDK remains focused on ICD coding assistance, not general-purpose document extraction.
 
 Experimental coding assistance, not a clinical diagnosis or automated billing system. Human review is required. This is WHO ICD-10, not ICD-10-CM.
 
@@ -50,6 +50,8 @@ Python 3.10 or newer:
 pip install 'icdjev @ git+https://github.com/Advaidv121/icdlens.git'
 # Include the optional hosted AI SDK:
 pip install 'icdjev[jev] @ git+https://github.com/Advaidv121/icdlens.git'
+# Clef needs no TypeSafe SDK; add local PDF/image preparation:
+pip install 'icdjev[documents] @ git+https://github.com/Advaidv121/icdlens.git'
 ```
 
 The package is not yet published to PyPI. From a local clone, use `pip install .` or `pip install '.[jev]'` instead. Pin a Git commit in production for reproducibility.
@@ -107,6 +109,34 @@ By default, `get_icd()` returns `list[ICDCode]`. A positive `include_candidates=
 
 [Full API reference](docs/api.md)
 
+## Quickstart: Clef and documents
+
+Set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_AUTH_TOKEN` securely in your process environment. A `.env` file is not loaded automatically. Never commit credentials.
+
+```python
+from icdjev import ICDLookup, pdf_to_base64_png, prepare_documents
+
+# Local preparation only; no API call:
+pages = pdf_to_base64_png("synthetic_note.pdf", target_longest_edge=2048)
+prepared = prepare_documents(["synthetic_note.pdf", "synthetic_scan.png"], compress=True)
+
+with ICDLookup(catalogue_path="icd102019en.xml", backend="clef") as icd:
+    matches = icd.get_icd("Essential hypertension is documented.")
+    report = icd.get_icd_from_documents(
+        ["synthetic_note.pdf", "synthetic_scan.png"],
+        compress=True,  # False skips optional lossless encoding optimization.
+    )
+    for batch in report.batches:
+        print(batch.sources)
+        for match in batch.review.matches:
+            print(match.code, match.label, match.probability)
+    payload = report.to_dict()
+```
+
+Use `backend="clef-flash"` for the faster variant. The same attached image group accompanies every traversal and verification call. More than four images, or more than eight MiB combined, are split into separate groups. Each group's scores and source pages stay separate: no cross-batch reconciliation or averaging is performed. Review all groups, especially when later pages contradict earlier ones.
+
+Document reports expose per-request model/usage, total request count, and source-file/page metadata without embedding image payloads. Paths and results can still be sensitive. Hosted inference sends evidence to the selected provider; obtain approval and appropriate vendor agreements before submitting patient information.
+
 ## Quickstart: local catalogue
 
 No hosted SDK or API key needed:
@@ -141,7 +171,7 @@ icdjev --file icd102019en.xml search 'diabetes'
 ```sh
 git clone https://github.com/Advaidv121/icdlens.git
 cd icdlens
-uv sync --locked --extra jev --extra dev
+uv sync --locked --extra jev --extra documents --extra dev
 uv run --no-sync pytest
 uv run --no-sync ruff check src tests examples
 uv run --no-sync ruff format --check src tests examples
@@ -159,4 +189,4 @@ uv run --extra jev python examples/simple_lookup.py \
 
 ## License
 
-Code is licensed under [MIT](LICENSE). WHO data and third-party services have separate terms. This project is not affiliated with or endorsed by WHO or TypeSafe.
+Code is licensed under [MIT](LICENSE). WHO data and third-party services have separate terms. This project is not affiliated with or endorsed by WHO, TypeSafe or Cloudflare.

@@ -3,6 +3,9 @@
 ## Unreleased
 
 ### Added
+- Cloudflare Clef/Clef-flash text and image evaluation using the shared catalogue traversal and verification engine.
+- Local PDF/image-to-base64-PNG helpers with 2,048-pixel longest-edge rendering, lossless optimization on by default, and optional DOC/DOCX conversion.
+- Independent document-batch reviews with source/page provenance, actual request counts and token usage; no cross-batch score aggregation.
 - Importable `ICDLookup` interface with optional TypeSafe/Jev inference.
 - Per-call thresholds, typed matches, JSON-ready review reports and ranked evaluated candidates.
 - Explicitly flagged best-score suggestions below acceptance cutoffs.
@@ -13,7 +16,7 @@
 ### Changed
 - Rename the GitHub repository to `icdlens` and update installation, badge and project URLs.
 - Introduce ICDLens branding and decision-model positioning; retain the `icdjev` package, imports and CLI for compatibility.
-- Distinguish available Jev lookup from planned Clef backends and document preparation in the README.
+- Document Jev, Clef/Clef-flash and local document preparation with runnable examples and explicit independent-batch semantics.
 
 ### Fixed
 - Preserve fourth/fifth-character suffix hierarchy in code ranges and wildcard references, including leading zeros and upper-bound descendants.
