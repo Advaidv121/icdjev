@@ -32,6 +32,7 @@ Issues = "https://github.com/Advaidv121/icdlens/issues"
 
 [project.optional-dependencies]
 jev = ["typesafe-sdk>=0.7.4,<0.8"]
+documents = ["pypdfium2>=4.30,<6", "Pillow>=10.4,<13"]
 dev = ["pytest>=8", "ruff>=0.6"]
 
 [project.scripts]
