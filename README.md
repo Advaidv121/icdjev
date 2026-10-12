@@ -2,9 +2,9 @@
 
 **Reviewable ICD-10 suggestions from text and documents, powered by decision models.**
 
-Formerly ICDJev. The package, Python imports, CLI and repository URL remain `icdjev` for compatibility. Text-based lookup is available today; document inputs and Clef integration are planned.
+Formerly ICDJev. The repository is now `icdlens`; the package, Python imports and CLI remain `icdjev` for compatibility. Text-based lookup is available today; document inputs and Clef integration are planned.
 
-[![Tests](https://github.com/Advaidv121/icdjev/actions/workflows/tests.yml/badge.svg)](https://github.com/Advaidv121/icdjev/actions/workflows/tests.yml)
+[![Tests](https://github.com/Advaidv121/icdlens/actions/workflows/tests.yml/badge.svg)](https://github.com/Advaidv121/icdlens/actions/workflows/tests.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -43,9 +43,9 @@ Python 3.10 or newer:
 
 ```sh
 # Catalogue only — no runtime dependencies:
-pip install 'icdjev @ git+https://github.com/Advaidv121/icdjev.git'
+pip install 'icdjev @ git+https://github.com/Advaidv121/icdlens.git'
 # Include the optional hosted AI SDK:
-pip install 'icdjev[jev] @ git+https://github.com/Advaidv121/icdjev.git'
+pip install 'icdjev[jev] @ git+https://github.com/Advaidv121/icdlens.git'
 ```
 
 The package is not yet published to PyPI. From a local clone, use `pip install .` or `pip install '.[jev]'` instead. Pin a Git commit in production for reproducibility.
@@ -135,8 +135,8 @@ icdjev --file icd102019en.xml search 'diabetes'
 ## Development
 
 ```sh
-git clone https://github.com/Advaidv121/icdjev.git
-cd icdjev
+git clone https://github.com/Advaidv121/icdlens.git
+cd icdlens
 uv sync --locked --extra jev --extra dev
 uv run --no-sync pytest
 uv run --no-sync ruff check src tests examples

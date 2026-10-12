@@ -11,7 +11,8 @@
 - MIT code license and contribution/security guidance.
 
 ### Changed
-- Introduce ICDLens branding and decision-model positioning; retain the `icdjev` package, imports, CLI and repository URL for compatibility.
+- Rename the GitHub repository to `icdlens` and update installation, badge and project URLs.
+- Introduce ICDLens branding and decision-model positioning; retain the `icdjev` package, imports and CLI for compatibility.
 - Distinguish available Jev lookup from planned Clef backends and document preparation in the README.
 
 ### Fixed
