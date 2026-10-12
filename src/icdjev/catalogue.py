@@ -1,4 +1,5 @@
 """The in-memory, modifier-aware ICD-10 catalogue built from a user-supplied WHO file."""
+
 from __future__ import annotations
 
 import re
@@ -11,8 +12,27 @@ from .models import CodeRef, Edition, Node, Rubric
 from .refs import code_key
 
 _TOKEN = re.compile(r"[a-z0-9]+")
-_STOP = {"of", "the", "and", "or", "in", "to", "a", "an", "with", "without", "other", "nos",
-         "not", "elsewhere", "classified", "unspecified", "due", "by", "for"}
+_STOP = {
+    "of",
+    "the",
+    "and",
+    "or",
+    "in",
+    "to",
+    "a",
+    "an",
+    "with",
+    "without",
+    "other",
+    "nos",
+    "not",
+    "elsewhere",
+    "classified",
+    "unspecified",
+    "due",
+    "by",
+    "for",
+}
 
 
 def _tokens(text: str) -> list[str]:
@@ -51,8 +71,15 @@ class Catalogue:
         cat._finalise()
         return cat
 
-    def _add(self, rc: claml.RawClass, *, virtual: bool = False, modifier: str | None = None,
-             code: str | None = None, label: str | None = None) -> Node:
+    def _add(
+        self,
+        rc: claml.RawClass,
+        *,
+        virtual: bool = False,
+        modifier: str | None = None,
+        code: str | None = None,
+        label: str | None = None,
+    ) -> Node:
         buckets: dict[str, list[Rubric]] = {"inclusion": [], "exclusion": [], "notes": []}
         for r in rc.rubrics:
             if r.kind == "inclusion":
@@ -63,11 +90,19 @@ class Catalogue:
                 buckets["notes"].append(r)
         links = tuple(ref for ref in rc.label_refs if ref.usage)
         node = Node(
-            code=code or rc.code, kind=rc.kind if rc.kind in ("chapter", "block") else "category",
-            label=label or rc.preferred, full_label=label or rc.preferred, long_label=rc.long,
-            inclusions=tuple(buckets["inclusion"]), exclusions=tuple(buckets["exclusion"]),
-            notes=tuple(buckets["notes"]), links=links, usage=rc.usage,
-            virtual=virtual, modifier=modifier, excluded_modifiers=tuple(rc.exclude_modifiers),
+            code=code or rc.code,
+            kind=rc.kind if rc.kind in ("chapter", "block") else "category",
+            label=label or rc.preferred,
+            full_label=label or rc.preferred,
+            long_label=rc.long,
+            inclusions=tuple(buckets["inclusion"]),
+            exclusions=tuple(buckets["exclusion"]),
+            notes=tuple(buckets["notes"]),
+            links=links,
+            usage=rc.usage,
+            virtual=virtual,
+            modifier=modifier,
+            excluded_modifiers=tuple(rc.exclude_modifiers),
         )
         self._nodes[node.code] = node
         return node
@@ -96,8 +131,9 @@ class Catalogue:
                         continue
                     for m in mcs:
                         vcode = node.code + m.code
-                        v = self._add(m, virtual=True, modifier=mcode, code=vcode,
-                                      label=m.preferred)
+                        v = self._add(
+                            m, virtual=True, modifier=mcode, code=vcode, label=m.preferred
+                        )
                         v.parent = node.code
                         v.usage = m.usage
                         v.full_label = f"{node.label}, {m.preferred.lower()}"
@@ -110,15 +146,20 @@ class Catalogue:
         if unexpanded_blocks:
             self.warnings.append(
                 f"{unexpanded_blocks} block-level ModifiedBy entries (external-cause chapters) "
-                "are not expanded in this version.")
+                "are not expanded in this version."
+            )
 
     def _finalise(self) -> None:
         for n in self._nodes.values():
             n.assignable = n.kind == "category" and not n.children
             if n.kind == "category" and n.parent and not n.virtual:
                 p = self._nodes.get(n.parent)
-                if p and p.kind == "category" and n.full_label == n.label and \
-                        not n.label.lower().startswith(p.label.lower()):
+                if (
+                    p
+                    and p.kind == "category"
+                    and n.full_label == n.label
+                    and not n.label.lower().startswith(p.label.lower())
+                ):
                     n.full_label = f"{p.label}: {n.label}"
 
     # ------------------------------------------------------------------ access
@@ -162,8 +203,11 @@ class Catalogue:
 
     def exclusion_targets(self, code: str, *, inherited: bool = True) -> list[tuple[str, CodeRef]]:
         """Machine-resolvable exclusions as ``(source_node, ref)``; free-text ones are omitted."""
-        rules = self.ancestors_rules(code)["exclusion"] if inherited else \
-            [(code, r) for r in self.get(code).exclusions]
+        rules = (
+            self.ancestors_rules(code)["exclusion"]
+            if inherited
+            else [(code, r) for r in self.get(code).exclusions]
+        )
         return [(src, ref) for src, r in rules for ref in r.refs]
 
     def free_text_exclusions(self, code: str) -> list[tuple[str, Rubric]]:
@@ -182,11 +226,14 @@ class Catalogue:
     def in_range(self, ref: CodeRef, code: str) -> bool:
         """True if ``code`` is covered by ``ref`` (single code, wildcard, or range)."""
         k, lo, hi = code_key(code), code_key(ref.start), code_key(ref.end)
-        if ref.wildcard or (not ref.is_range and lo[2] == -1):
-            return k[:2] == lo[:2] if not ref.is_range else lo <= k <= hi
+        if not all(key[0] for key in (k, lo, hi)):
+            return False
         if ref.is_range:
-            hi3 = (hi[0], hi[1], 10**6) if hi[2] == -1 else hi
-            return lo <= k <= hi3
+            # Include descendants of the upper bound without crossing its prefix.
+            upper = (k[0], k[1], k[2][: len(hi[2])])
+            return lo <= k and upper <= hi
+        if ref.wildcard or not lo[2]:
+            return k[:2] == lo[:2] and k[2].startswith(lo[2])
         return k == lo
 
     def validate(self, code: str) -> tuple[bool, str]:
@@ -228,7 +275,8 @@ class Catalogue:
     def stats(self) -> dict[str, int]:
         kinds = Counter(n.kind for n in self._nodes.values())
         return {
-            **kinds, "virtual": sum(n.virtual for n in self._nodes.values()),
+            **kinds,
+            "virtual": sum(n.virtual for n in self._nodes.values()),
             "assignable": sum(n.assignable for n in self._nodes.values()),
             "total": len(self._nodes),
         }

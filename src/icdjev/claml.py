@@ -1,4 +1,5 @@
 """Parser for WHO ICD-10 ClaML exports (the file users download from WHO themselves)."""
+
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
@@ -113,8 +114,11 @@ def read(path: str | Path):
             f"uid={ident.get('uid')!r}. ICD-10-CM and other formats are not supported."
         )
     edition = Edition(
-        authority=authority, uid=ident.get("uid", ""), version=title.get("version", ""),
-        title=(title.text or "").strip(), date=title.get("date", ""),
+        authority=authority,
+        uid=ident.get("uid", ""),
+        version=title.get("version", ""),
+        title=(title.text or "").strip(),
+        date=title.get("date", ""),
         language=_first_lang(root),
     )
     classes = [RawClass(c) for c in root.findall("Class")]

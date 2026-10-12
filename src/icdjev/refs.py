@@ -1,4 +1,5 @@
 """Parsing of code references printed inside rubric text ("E12.-", "J70.2-J70.4")."""
+
 from __future__ import annotations
 
 import re
@@ -23,17 +24,22 @@ def parse_ref(text: str, code_attr: str | None = None, usage: str | None = None)
         return CodeRef(raw=text, start=m.group(1), end=m.group(2), usage=usage)
     m = _SINGLE.match(text)
     if m:
-        return CodeRef(raw=text, start=m.group(1), end=m.group(1), wildcard=bool(m.group(2)),
-                       usage=usage)
+        return CodeRef(
+            raw=text, start=m.group(1), end=m.group(1), wildcard=bool(m.group(2)), usage=usage
+        )
     if code_attr:
-        return CodeRef(raw=text or code_attr, start=code_attr.split("-")[0],
-                       end=code_attr.split("-")[-1], usage=usage)
+        return CodeRef(
+            raw=text or code_attr,
+            start=code_attr.split("-")[0],
+            end=code_attr.split("-")[-1],
+            usage=usage,
+        )
     return None
 
 
-def code_key(code: str) -> tuple[str, int, int]:
-    """Total order over codes: letter, 2-digit number, decimal part (-1 if none)."""
-    m = re.match(r"^([A-Z])(\d{2})(?:\.(\d+))?", code)
+def code_key(code: str) -> tuple[str, int, str]:
+    """Hierarchical order: preserve suffix digits, including leading zeros."""
+    m = re.fullmatch(r"([A-Z])(\d{2})(?:\.(\d+))?", code)
     if not m:
-        return ("", -1, -1)
-    return (m.group(1), int(m.group(2)), int(m.group(3)) if m.group(3) else -1)
+        return ("", -1, "")
+    return (m.group(1), int(m.group(2)), m.group(3) or "")

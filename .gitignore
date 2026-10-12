@@ -11,3 +11,10 @@ build/
 !tests/data/*.xml
 *.zip
 .env
+.env.*
+!.env.example
+# Generated results can contain source evidence; never ship them.
+examples/*results.json
+artifacts/
+.coverage
+htmlcov/

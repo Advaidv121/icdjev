@@ -44,7 +44,8 @@ def test_exclusions_machine_and_free_text(cat):
     assert [r.raw for _, r in own] == ["P70.2", "T12.-"]
     assert [r.wildcard for _, r in own] == [False, True]
     assert [r.text for _, r in cat.free_text_exclusions("T11") if _ == "T11"] == [
-        "see other chapters for localized conditions"]
+        "see other chapters for localized conditions"
+    ]
 
 
 def test_chapter_exclusions_are_inherited(cat):
@@ -71,6 +72,31 @@ def test_in_range(cat):
     assert cat.in_range(wild, "T12.1") and not cat.in_range(wild, "T13")
 
 
+@pytest.mark.parametrize(
+    "raw, code, expected",
+    [
+        ("S52.1-S52.9", "S52.10", True),
+        ("S52.1-S52.9", "S52.90", True),
+        ("S52.1-S52.9", "S52.00", False),
+        ("M80.00-M80.09", "M80.1", False),
+        ("M80.00-M80.09", "M80.0", False),
+        ("M80.00-M80.09", "M80.00", True),
+        ("M80.00-M80.09", "M80.09", True),
+        ("M80.00-M80.09", "M80.090", True),
+        ("M80.00-M80.09", "M80.10", False),
+        ("O00-O99", "O99.99", True),
+        ("M80.0", "M80.00", False),
+        ("M80.0-", "M80.00", True),
+        ("M80.0-", "M80.1", False),
+        ("M80", "M80.00", True),
+    ],
+)
+def test_reference_ranges_preserve_suffix_hierarchy(cat, raw, code, expected):
+    from icdjev.refs import parse_ref
+
+    assert cat.in_range(parse_ref(raw), code) is expected
+
+
 def test_inclusion_terms_are_searchable(cat):
     assert cat.search("high blood pressure")[0].code == "T13"
     assert cat.search("sugar disease")[0].code in {"T11", "T11.0", "T11.9"}
@@ -83,8 +109,10 @@ def test_unknown_code(cat):
 
 def test_rejects_non_who_files(tmp_path):
     bad = tmp_path / "x.xml"
-    bad.write_text('<ClaML version="2.0.0"><Identifier authority="CDC" uid="icd10cm"/>'
-                   '<Title name="x" version="1" date="d">t</Title></ClaML>')
+    bad.write_text(
+        '<ClaML version="2.0.0"><Identifier authority="CDC" uid="icd10cm"/>'
+        '<Title name="x" version="1" date="d">t</Title></ClaML>'
+    )
     with pytest.raises(UnsupportedFormatError):
         Catalogue.load(bad)
     junk = tmp_path / "y.xml"

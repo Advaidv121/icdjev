@@ -1,4 +1,5 @@
 """``icdjev`` command line: inspect a WHO file without any model or network access."""
+
 from __future__ import annotations
 
 import argparse
@@ -12,12 +13,20 @@ from .errors import IcdJevError
 def _node(c: Catalogue, code: str) -> dict:
     n = c.get(code)
     return {
-        "code": n.code, "kind": n.kind, "label": n.full_label, "assignable": n.assignable,
-        "virtual": n.virtual, "usage": n.usage, "path": [p.code for p in c.path(code)],
-        "children": n.children, "extensions": list(n.extensions),
+        "code": n.code,
+        "kind": n.kind,
+        "label": n.full_label,
+        "assignable": n.assignable,
+        "virtual": n.virtual,
+        "usage": n.usage,
+        "path": [p.code for p in c.path(code)],
+        "children": n.children,
+        "extensions": list(n.extensions),
         "inclusions": [r.text for r in n.inclusions],
-        "exclusions": [{"from": s, "text": r.text, "targets": [x.raw for x in r.refs]}
-                       for s, r in c.ancestors_rules(code)["exclusion"]],
+        "exclusions": [
+            {"from": s, "text": r.text, "targets": [x.raw for x in r.refs]}
+            for s, r in c.ancestors_rules(code)["exclusion"]
+        ],
         "notes": [{"kind": r.kind, "text": r.text} for r in n.notes],
     }
 
@@ -39,12 +48,22 @@ def main(argv: list[str] | None = None) -> int:
     try:
         c = Catalogue.load(a.file)
         if a.cmd == "info":
-            print(json.dumps({"edition": c.edition.__dict__ if hasattr(c.edition, "__dict__") else
-                              {k: getattr(c.edition, k) for k in c.edition.__slots__},
-                              "stats": c.stats(), "warnings": c.warnings}, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "edition": c.edition.__dict__
+                        if hasattr(c.edition, "__dict__")
+                        else {k: getattr(c.edition, k) for k in c.edition.__slots__},
+                        "stats": c.stats(),
+                        "warnings": c.warnings,
+                    },
+                    indent=2,
+                )
+            )
         elif a.cmd == "show":
             print(json.dumps(_node(c, a.code), indent=2, ensure_ascii=False))
         elif a.cmd == "tree":
+
             def walk(code, d, ind=""):
                 n = c.get(code)
                 mark = {"dagger": " +", "aster": " *"}.get(n.usage or "", "")
@@ -52,7 +71,8 @@ def main(argv: list[str] | None = None) -> int:
                 if d > 0:
                     for k in n.children:
                         walk(k, d - 1, ind + "  ")
-            for r in ([c.get(a.code)] if a.code else c.chapters):
+
+            for r in [c.get(a.code)] if a.code else c.chapters:
                 walk(r.code, a.depth)
         elif a.cmd == "search":
             for n in c.search(a.query, a.n):
