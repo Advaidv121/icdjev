@@ -10,6 +10,10 @@
 - Offline regression tests, safe examples, Python 3.10–3.13 CI and SDK documentation.
 - MIT code license and contribution/security guidance.
 
+### Changed
+- Introduce ICDLens branding and decision-model positioning; retain the `icdjev` package, imports, CLI and repository URL for compatibility.
+- Distinguish available Jev lookup from planned Clef backends and document preparation in the README.
+
 ### Fixed
 - Preserve fourth/fifth-character suffix hierarchy in code ranges and wildcard references, including leading zeros and upper-bound descendants.
 

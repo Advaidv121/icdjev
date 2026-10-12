@@ -1,16 +1,39 @@
-# ICDJev
+# ICDLens
 
-![ICDJev project artwork](docs/assets/icdjev-hero.png)
+**Reviewable ICD-10 suggestions from text and documents, powered by decision models.**
+
+Formerly ICDJev. The package, Python imports, CLI and repository URL remain `icdjev` for compatibility. Text-based lookup is available today; document inputs and Clef integration are planned.
 
 [![Tests](https://github.com/Advaidv121/icdjev/actions/workflows/tests.yml/badge.svg)](https://github.com/Advaidv121/icdjev/actions/workflows/tests.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-An importable Python SDK for WHO ICD-10 catalogue lookup and reviewable, Jev-powered coding suggestions. Initialize once, call `get_icd(text)`, and receive typed results. A local-only CLI is included.
+ICDLens is a Python SDK for WHO ICD-10 catalogue lookup and reviewable AI-assisted coding suggestions. Instead of asking a model to generate code strings freely, it evaluates catalogue candidates using typed decision questions and exposes model-support scores for human review. Initialize once, call `get_icd(text)`, and receive typed results. A local-only CLI is included.
+
+## Available today
 
 - Local catalogue: inspect codes, labels, hierarchy, inclusions, exclusions and modifier-derived codes without network access.
 - Optional AI lookup: traverse the catalogue and verify exact-code support using TypeSafe/Jev.
 - Review reports: inspect evaluated candidates, scores, cutoff decisions and depth truncation; export JSON-ready dictionaries.
+
+## Decision models
+
+| Backend | Intended use | SDK status |
+| --- | --- | --- |
+| [TypeSafe Jev](https://typesafe.ai/) | Text-based candidate evaluation and exact-code verification | Available |
+| [Cloudflare Clef](https://developers.cloudflare.com/ai/models/@cf/cloudflare/clef/) | Text and image-based decisions | Planned |
+| [Cloudflare Clef-flash](https://developers.cloudflare.com/ai/models/@cf/cloudflare/clef-flash/) | Lower-latency text and image-based decisions | Planned |
+
+These models evaluate predefined questions rather than generate free-form answers. Their scores indicate model support, not validated clinical confidence. Jev is the currently supported SDK backend; Clef and Clef-flash integration are planned.
+
+## Planned document support
+
+- Accept multiple images and PDFs, with optional DOC/DOCX-to-PDF conversion.
+- Provide independently usable document preparation helpers: PDF pages to base64 PNG, configurable longest-edge rendering (proposed default: 2,048 pixels), and aspect-ratio preservation.
+- Enable lossless PNG optimization by default, with an opt-out; keep resizing separate from encoding compression and make lossy formats explicit.
+- Prepare document inputs for Clef with file/page provenance and explicit request-limit handling. Related multi-page records need an evidence-combination policy; batching alone does not provide joint review of the whole record.
+
+Document helpers and document-based ICD lookup are roadmap items, not currently callable APIs. The SDK remains focused on ICD coding assistance, not general-purpose document extraction.
 
 Experimental coding assistance, not a clinical diagnosis or automated billing system. Human review is required. This is WHO ICD-10, not ICD-10-CM.
 

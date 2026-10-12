@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "icdjev"
 version = "0.1.0"
-description = "WHO ICD-10 lookup and reviewable Jev-powered coding suggestions."
+description = "ICDLens: WHO ICD-10 lookup and reviewable coding suggestions powered by decision models."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
